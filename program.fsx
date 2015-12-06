@@ -11,38 +11,50 @@ let calculateHash (input:string) =
 
     sb.ToString()
 
-let stringItem (value:string) = 
-        value, value.Length, String.Concat(value.ToCharArray() 
-                            |> Array.sort  
-                            |> Array.map (fun i -> string i))
-
-let candidates (pool:(string*int*string)[], origin:string) =
-    let value, length, sorted = stringItem origin
-    pool 
-    |> Array.filter (fun i ->
-        match i with
-        | v, _, s when v <> value -> s = sorted
-        | _ -> false  
-        )
-let loadWords () = 
-    System.IO.Path.Combine(System.Environment.CurrentDirectory, "wordlist.txt") 
-    |> System.IO.File.ReadAllLines 
+let alphabetize (value:string) = 
+    String.Concat(value.ToCharArray() 
+    |> Array.sort  
+    |> Array.map (fun i -> string i))
+let stringItem (value:string) = value, value.Length
+let areAlphaEquale value1 value2 = alphabetize value1 = alphabetize value2
+    
+let loadWordsFromFile filename = 
+    System.IO.Path.Combine(System.Environment.CurrentDirectory, filename) 
+    |> System.IO.File.ReadAllLines
+    |> Array.take 100
     |> Array.map stringItem
-let candidatesFromFile value = candidates (loadWords(), value) 
-
-let printWords (words:(string*int*string)[]) =
-    words
-    //|> Array.take 20
-    |> Array.iter (fun i -> 
+    |> Array.sortByDescending (fun i ->  
         match i with
-        | (value, length, sorted) -> printfn "| %s | %d | %s |" value length sorted)
+        | _, l -> l
+        )        
+let loadWords () = loadWordsFromFile "wordlist.txt"
 
+let printWord (word:string*int) =
+    match word with
+    | value, length -> printfn "| %s | %d |" value length
+
+let printWords (words : (string*int)[]) =
+    words
+    |> Array.iter (fun i -> printWord i) 
+ 
+let uberCandidates (input : string) (orderedPool : (string * int)[]) =
+    let candidates = List.Empty
+ 
+    let length = input.Length
+    for i in 0 .. orderedPool.Length - 1 do
+        let falco = orderedPool.[i]
+        printWord falco
+    candidates
 let main () =
     let anagram = "poultry outwits ants" 
     let md5hash = "4624d200580677270a54ccff86b9610e" 
 
-    let words = candidatesFromFile("ant")
-    words |> printWords
+    let words = loadWords() // candidatesFromFile("ant")
+    words |> uberCandidates "sda" |> ignore
+    
+    ""
+
+    //words |> printWords
     // let expectedHash = calculateHash anagram
 
 
