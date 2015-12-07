@@ -21,7 +21,8 @@ let areAlphaEquale value1 value2 = alphabetize value1 = alphabetize value2
 let loadWordsFromFile filename = 
     System.IO.Path.Combine(System.Environment.CurrentDirectory, filename) 
     |> System.IO.File.ReadAllLines
-//    |> Array.take 100
+    //|> Array.take 5000
+    |> Array.filter (fun i -> i.Length > 2)
     |> Array.map stringItem
     |> Array.sortByDescending (fun i ->  
         match i with
@@ -38,37 +39,18 @@ let printWords (words : (string*int)[]) =
     |> Array.iter (fun i -> printWord i) 
  
  
-// TODO: Do it rec asap, stupid
-let uberCandidates (input : string) (orderedPool : (string * int)[]) =
-    let mutable candidates = System.Collections.Generic.List<string[]>()
-    let length = input.Length
-    
-    for i in 0 .. orderedPool.Length - 1 do
+let rec uberCandidatesRec (input : string) (lengthLeft : int) (cursor : int) (runningSet : string[]) (candidates : System.Collections.Generic.List<string[]>) (orderedPool : (string * int)[]) =
 
-        let first = orderedPool.[i]
-        let firstValue, firstLength = first
-        let firstLengthLeft = length - firstLength
-        if firstLengthLeft = 0 && alphabetize(firstValue) = alphabetize(input) then candidates.Add [|firstValue|] 
+    for i in cursor .. orderedPool.Length - 1 do
+        let item = orderedPool.[i]
+        let itemValue, itemLength = item
+        let itemLengthLeft = lengthLeft - itemLength
+        let set = Array.append runningSet [|itemValue|]
+        if itemLengthLeft > 0 && i < orderedPool.Length - 1 then 
+            uberCandidatesRec input itemLengthLeft (i + 1) set candidates orderedPool 
+        elif itemLengthLeft = 0 && alphabetize(String.Concat(set)) = alphabetize(input) then
+            candidates.Add set
 
-        if firstLengthLeft > 0 then 
-            for j in i + 1 .. orderedPool.Length - 1 do
-
-                let second = orderedPool.[j]
-                let secondValue, secondLength = second
-                let secondLengthLeft = firstLengthLeft - secondLength
-                if secondLengthLeft = 0 && alphabetize(String.Concat(firstValue, secondValue)) = alphabetize(input) then candidates.Add [|firstValue; secondValue|] 
-                
-                if secondLengthLeft > 0 then 
-                    for k in j + 1 .. orderedPool.Length - 1 do
-                        
-                        let third = orderedPool.[k]
-                        let thirdValue, thirdLength = third
-                        let thirdLengthLeft = secondLengthLeft - thirdLength
-                        if thirdLengthLeft = 0 && alphabetize(String.Concat(firstValue, secondValue, thirdValue)) = alphabetize(input) then candidates.Add [|firstValue; secondValue; thirdValue|] 
-
-
-        //printWord first
-    candidates
 let printCandidates (candidates : System.Collections.Generic.IEnumerable<string[]>) =
     for item in candidates do
         item |> Array.iter (fun i -> printf "| %s " i)
@@ -78,9 +60,16 @@ let main () =
     let anagram = "poultry outwits ants" 
     let md5hash = "4624d200580677270a54ccff86b9610e" 
 
+    let candidates = System.Collections.Generic.List<string[]>()
+    let value = "stopsita"
+    let length = value.Length
+
     let words = loadWords() // candidatesFromFile("ant")
-    words |> uberCandidates "poultryoutwitsants" |> printCandidates
+    words |> uberCandidatesRec value length 0 [||] candidates 
+    candidates |> printCandidates
     
+//    words |> printWords  
+
     ""
 
     //words |> printWords
