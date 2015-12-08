@@ -22,8 +22,8 @@ let loadWordsFromFile filename =
     System.IO.Path.Combine(System.Environment.CurrentDirectory, filename) 
     |> System.IO.File.ReadAllLines
     //|> Array.take 5000
-    |> Array.filter (fun i -> i.Length > 2)
-    |> Array.sortByDescending (fun i -> i.Length)
+    // |> Array.filter (fun i -> i.Length > 1)
+    |> Array.sortBy (fun i -> i.Length)
     |> Array.map stringItem
 
 let loadWords () = loadWordsFromFile "wordlist.txt"
@@ -35,12 +35,19 @@ let printWord (word:string*int) =
 let printWords (words : (string*int)[]) =
     words
     |> Array.iter (fun i -> printWord i) 
- 
- 
+
+let printCandidate (candidate : string[]) =
+    candidate |> Array.iter (fun i -> printf "| %s " i)
+    printfn "|"
+
+let printCandidates (candidates : System.Collections.Generic.IEnumerable<string[]>) =  
+    for item in candidates do
+        printCandidate item
+
+
 let rec uberCandidatesRec (input : string) (lengthLeft : int) (runningSet : string[]) (candidates : System.Collections.Generic.List<string[]>) (orderedPool : (string * int)[]) =
 
     orderedPool |> Array.Parallel.iteri (fun i item ->
-        //let item = orderedPool.[i]
         let itemValue, itemLength = item
         let itemLengthLeft = lengthLeft - itemLength
         let set = Array.append runningSet [|itemValue|]
@@ -48,10 +55,27 @@ let rec uberCandidatesRec (input : string) (lengthLeft : int) (runningSet : stri
             uberCandidatesRec input itemLengthLeft set candidates (Array.sub orderedPool (i + 1) (orderedPool.Length - i - 1)) 
         elif itemLengthLeft = 0 && alphabetize(String.Concat(set)) = alphabetize(input) then
             candidates.Add set
+            printCandidate set
     )
-    // for i in 0 .. orderedPool.Length - 1 do
-    //     let item = orderedPool.[i]
-    //     let itemValue, itemLength = item
+let ThreeSumCandidates (orderedPool : (string * int)[]) (input : string) =
+    let length = input.Length
+    for i in 0 .. orderedPool.Length - 3 do
+        let aValue, aLength = orderedPool.[i]
+        let mutable start = i + 1
+        let mutable finnish = orderedPool.Length - 1
+        while start < finnish do    
+            let bValue, bLength = orderedPool.[start]  
+            let cValue, cLength = orderedPool.[finnish]
+            let set = [|aValue; bValue; cValue|]
+            if (aLength + bLength + cLength = length) && alphabetize(String.Concat(set)) = alphabetize(input) then
+                printCandidate set
+                let start = start + 1
+                finnish = finnish - 1
+            elif (aLength + bLength + cLength > length) then
+                finnish = finnish - 1
+            else 
+                start = start + 1
+    
     //     let itemLengthLeft = lengthLeft - itemLength
     //     let set = Array.append runningSet [|itemValue|]
     //     if itemLengthLeft > 0 && i < orderedPool.Length - 1 then 
@@ -59,22 +83,21 @@ let rec uberCandidatesRec (input : string) (lengthLeft : int) (runningSet : stri
     //     elif itemLengthLeft = 0 && alphabetize(String.Concat(set)) = alphabetize(input) then
     //         candidates.Add set
 
-let printCandidates (candidates : System.Collections.Generic.IEnumerable<string[]>) =
-    for item in candidates do
-        item |> Array.iter (fun i -> printf "| %s " i)
-        printfn "|"
-
+    
 let main () =
     let anagram = "poultry outwits ants" 
     let md5hash = "4624d200580677270a54ccff86b9610e" 
 
     let candidates = System.Collections.Generic.List<string[]>()
-    let value = "stopitsa   "
+    let value = "poultryoutwitsants"
     let length = value.Length
 
     let words = loadWords() // candidatesFromFile("ant")
-    words |> uberCandidatesRec value length [||] candidates 
-    candidates |> printCandidates
+//    words |> uberCandidatesRec value length [||] candidates 
+
+    printfn "--------- List Candidates --------------"
+    ThreeSumCandidates words "ana"
+    //candidates |> printCandidates
     
 //    words |> printWords  
 
@@ -82,7 +105,7 @@ let main () =
 
     //words |> printWords
     // let expectedHash = calculateHash anagram
-main()
+//main()
 
         
 
