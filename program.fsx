@@ -11,14 +11,17 @@ let calculateHash (input:string) =
 
     sb.ToString()
 
+let checkHash (value : string[]) (hash : string) =
+    let me = String.Concat(value)
+    let myHash = calculateHash me
+    myHash.ToLower() = hash.ToLower()
 
 let alphabetize (value:string) = 
     String.Concat(value.ToCharArray() 
     |> Array.sort  
     |> Array.map (fun i -> string i))
 let stringItem (value:string) = value, value.Length
-let areAlphaEquale value1 value2 = alphabetize value1 = alphabetize value2
-
+let areAlphaEquale value1 value2 = (alphabetize value1 = alphabetize value2)
 let hasUnusedChars (focus : string) (valueToCheck : string)=
     valueToCheck.ToCharArray() |> Array.exists (fun item ->  
         //printfn "item: %c, focus.IndexOf(item): %d" item (focus.IndexOf(item))
@@ -33,16 +36,12 @@ let loadWordsFromFile filename input =
     |> Array.filter ((fun i -> hasUnusedChars input i) >> not)
     |> Array.sortByDescending (fun i -> i.Length)
     |> Array.map stringItem
-
 let loadWords input = loadWordsFromFile "wordlist.txt" input
 
 let printWord (word:string*int) =
     match word with
     | value, length -> printfn "| %s | %d |" value length
-
-let printWords (words : (string*int)[]) =
-    words
-    |> Array.iter (fun i -> printWord i) 
+let printWords (words : (string*int)[]) = words |> Array.iter (fun i -> printWord i) 
 
 let printCandidate (candidate : string[]) =
     candidate |> Array.iter (fun i -> printf "| %s " i)
@@ -66,6 +65,8 @@ let rec uberCandidatesRec (input : string) (lengthLeft : int) (runningSet : stri
             printCandidate set  
     )
 let ThreeSumCandidates (orderedPool : (string * int)[]) (input : string) =
+    let candidates = System.Collections.Generic.List<string[]>()
+
     if input.Length % 3 <> 0 then printfn "There will be errors." 
     let substract = input.Length / 3
     let list = orderedPool |> Array.map ( fun item ->
@@ -83,14 +84,16 @@ let ThreeSumCandidates (orderedPool : (string * int)[]) (input : string) =
             printf "i: %d, start: %d, finnish: %d, a+b+c: %d," i start finnish (aLength + bLength + cLength)
             printCandidate set
             if (aLength + bLength + cLength = 0) then
-                if alphabetize(String.Concat(set)) = alphabetize(input) then printfn "BINGO!" //printCandidate set
+                if alphabetize(String.Concat(set)) = alphabetize(input) then 
+                    candidates.Add set
+                    printfn "BINGO!" //printCandidate set
                 start <- start + 1
                 finnish <- finnish - 1
             elif (aLength + bLength + cLength > 0) then
                 finnish <- finnish - 1
             else 
                 start <- start + 1
-    
+    candidates    
     //     let itemLengthLeft = lengthLeft - itemLength
     //     let set = Array.append runningSet [|itemValue|]
     //     if itemLengthLeft > 0 && i < orderedPool.Length - 1 then 
@@ -113,7 +116,7 @@ let main () =
 //    words |> uberCandidatesRec value length [||] candidates 
 //    candidates |> printCandidates
 
-    ThreeSumCandidates words value
+    let can3 = ThreeSumCandidates words value
     
     //words |> printWords  
     words |> Array.length |> printfn "Dictionary Count: %d"  
@@ -122,7 +125,7 @@ let main () =
 
     //words |> printWords
     // let expectedHash = calculateHash anagram
-main()
+//main()
 
         
 
