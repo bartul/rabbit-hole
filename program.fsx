@@ -54,7 +54,7 @@ let loadWordsFromFile filename input =
     System.IO.Path.Combine(System.Environment.CurrentDirectory, filename) 
     |> System.IO.File.ReadAllLines
     //|> Array.take 5000
-    |> Array.filter (fun i -> i.Length > 4)
+    |> Array.filter (fun i -> i.Length > 3)
     |> Array.filter ((fun i -> hasUnusedChars input i) >> not)
     |> Array.sortByDescending (fun i -> i.Length)
     |> Array.map stringItem
@@ -143,6 +143,7 @@ let main () =
     let words = loadWords value 
     words |> Array.length |> printfn "Dictionary Count: %d"  
     ""
-//runWith3Sum()
+run()
             
+
 
