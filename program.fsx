@@ -49,6 +49,14 @@ let stringItem (value:string) = value, value.Length
 let areAlphaEquale value1 value2 = (alphabetize value1 = alphabetize value2)
 let hasUnusedChars (focus : string) (valueToCheck : string)=
     valueToCheck.ToCharArray() |> Array.exists (fun item -> focus.IndexOf(item) = -1)
+let hasToManyCharsFor (focus : string) (valueToCheck : string)=
+    valueToCheck.ToCharArray() |> Array.exists (fun item -> 
+        // printfn "" item
+        let count (ar:string) = (ar.ToCharArray() |> Array.filter (fun c -> item = c)).Length 
+        let fc = count focus
+        let vc = count valueToCheck
+        fc <> 0 && vc > fc
+        )
 
 let loadWordsFromFile filename input = 
     System.IO.Path.Combine(System.Environment.CurrentDirectory, filename) 
@@ -56,7 +64,8 @@ let loadWordsFromFile filename input =
     //|> Array.take 5000
     |> Array.filter (fun i -> i.Length > 3)
     |> Array.filter ((fun i -> hasUnusedChars input i) >> not)
-    |> Array.sortByDescending (fun i -> i.Length)
+    |> Array.filter ((fun i -> hasToManyCharsFor input i) >> not)
+    |> Array.sortBy (fun i -> i.Length)
     |> Array.map stringItem
 let loadWords input = loadWordsFromFile "wordlist.txt" input
 
@@ -129,11 +138,11 @@ let run () =
 
     printfn "--------- List Candidates --------------"
     words |> uberCandidatesRec value length [||] (fun item ->
-        System.IO.File.AppendAllText(System.IO.Path.Combine(System.Environment.CurrentDirectory, "result.txt") , (item |> AsSentence) + "\n")
+        //System.IO.File.AppendAllText(System.IO.Path.Combine(System.Environment.CurrentDirectory, "result.txt") , (item |> AsSentence) + "\n")
         item |> printCandidate
         item |> checkSentanceForHash md5hash (fun bingo ->
             System.IO.File.AppendAllText(System.IO.Path.Combine(System.Environment.CurrentDirectory, "bingo.txt"), (item |> AsSentence) + "\n")
-            printfn "BINGO!!!"            
+            printf " <---------------------- BINGO!!!"            
             ) 
         ) 
 
@@ -143,7 +152,7 @@ let main () =
     let words = loadWords value 
     words |> Array.length |> printfn "Dictionary Count: %d"  
     ""
-run()
+//run()
             
 
 
