@@ -117,6 +117,7 @@ let runWith3Sum () =
     let length = value.Length
 
     let words = loadWords value 
+    words |> Array.length |> printfn "Dictionary Count: %d"  
 
     let mutable x = [||]
     printfn "--------- List Candidates --------------"
@@ -135,6 +136,7 @@ let run () =
     let length = value.Length
 
     let words = loadWords value 
+    words |> Array.length |> printfn "Dictionary Count: %d"  
 
     printfn "--------- List Candidates --------------"
     words |> uberCandidatesRec value length [||] (fun item ->
@@ -152,7 +154,7 @@ let main () =
     let words = loadWords value 
     words |> Array.length |> printfn "Dictionary Count: %d"  
     ""
-//run()
+run()
             
 
 
