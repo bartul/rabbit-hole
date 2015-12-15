@@ -65,7 +65,7 @@ let loadWordsFromFile filename input =
     |> Array.filter (fun i -> i.Length > 3)
     |> Array.filter ((fun i -> hasUnusedChars input i) >> not)
     |> Array.filter ((fun i -> hasToManyCharsFor input i) >> not)
-    |> Array.sortBy (fun i -> i.Length)
+    |> Array.sortByDescending (fun i -> i.Length)
     |> Array.map stringItem
 let loadWords input = loadWordsFromFile "wordlist.txt" input
 
